@@ -4,6 +4,7 @@
 
 export interface Customer {
   id: string;
+  auth_user_id: string | null;
   user_name: string;
   email: string;
   phone: string | null;
@@ -39,6 +40,7 @@ export interface CustomerInsert {
 }
 
 export interface CustomerUpdate {
+  auth_user_id?: string | null;
   user_name?: string;
   email?: string;
   phone?: string | null;

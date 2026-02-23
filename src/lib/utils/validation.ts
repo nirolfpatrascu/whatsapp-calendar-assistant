@@ -24,9 +24,7 @@ export const OnboardingPayloadSchema = z.object({
   phone: z.string().min(5, 'Phone number must be at least 5 characters'),
   timezone: z.string().min(1, 'Timezone is required'),
   send_hour: z.string().regex(/^\d{2}:\d{2}$/, 'Send hour must be in HH:MM format'),
-  gcal_refresh_token: z.string().min(1, 'Google Calendar refresh token is required'),
   ordertoken: z.string().min(1, 'Order token is required'),
-  secret: z.string().min(1, 'Secret is required'),
 });
 
 export type OnboardingPayload = z.infer<typeof OnboardingPayloadSchema>;
@@ -36,7 +34,6 @@ export type OnboardingPayload = z.infer<typeof OnboardingPayloadSchema>;
 // ============================================================
 
 export const PreferencesSavePayloadSchema = z.object({
-  order_token: z.string().min(1, 'Order token is required'),
   calendar_ids: z.array(z.string()),
   send_hour: z.string().regex(/^\d{2}:\d{2}$/, 'Send hour must be in HH:MM format'),
   timezone: z.string().min(1, 'Timezone is required'),

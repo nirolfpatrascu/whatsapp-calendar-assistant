@@ -66,6 +66,26 @@ export async function getCustomerByToken(
   return data as Customer;
 }
 
+export async function getCustomerByAuthUserId(
+  authUserId: string
+): Promise<Customer | null> {
+  const supabase = createSupabaseAdmin();
+
+  const { data, error } = await supabase
+    .from('customers')
+    .select('*')
+    .eq('auth_user_id', authUserId)
+    .limit(1)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+
+  return data as Customer;
+}
+
 export async function getCustomerById(
   id: string
 ): Promise<Customer | null> {
@@ -116,6 +136,7 @@ export async function completeOnboarding(
     google_refresh_token: string;
     send_hour: string;
     timezone: string;
+    auth_user_id: string;
   }
 ): Promise<Customer | null> {
   const supabase = createSupabaseAdmin();
@@ -128,6 +149,7 @@ export async function completeOnboarding(
       google_refresh_token: data.google_refresh_token,
       send_hour: data.send_hour,
       timezone: data.timezone,
+      auth_user_id: data.auth_user_id,
       onboarding_status: 'complete',
       order_token_status: 'used',
       onboarding_last_email_at: new Date().toISOString(),
@@ -146,7 +168,7 @@ export async function completeOnboarding(
 // ============================================================
 
 export async function updatePreferences(
-  orderToken: string,
+  customerId: string,
   data: {
     selected_calendar_ids: string[];
     send_hour: string;
@@ -173,7 +195,7 @@ export async function updatePreferences(
   const { data: customer, error } = await supabase
     .from('customers')
     .update(updates)
-    .eq('order_token', orderToken)
+    .eq('id', customerId)
     .select()
     .single();
 
