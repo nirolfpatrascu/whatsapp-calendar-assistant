@@ -1,10 +1,12 @@
 import type { UserInsert, UserUpdate, MessageLogInsert } from "@/types/database";
 import { createAdminClient } from "./admin";
 
-const supabase = createAdminClient();
+function getSupabase() {
+  return createAdminClient();
+}
 
 export async function upsertUser(data: UserInsert) {
-  const { data: user, error } = await supabase
+  const { data: user, error } = await getSupabase()
     .from("users")
     .upsert(data, { onConflict: "auth_user_id" })
     .select()
@@ -15,7 +17,7 @@ export async function upsertUser(data: UserInsert) {
 }
 
 export async function getUserByAuthId(authUserId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("users")
     .select("*")
     .eq("auth_user_id", authUserId)
@@ -26,7 +28,7 @@ export async function getUserByAuthId(authUserId: string) {
 }
 
 export async function updateUser(authUserId: string, updates: UserUpdate) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("users")
     .update(updates)
     .eq("auth_user_id", authUserId)
@@ -38,7 +40,7 @@ export async function updateUser(authUserId: string, updates: UserUpdate) {
 }
 
 export async function createMessageLog(log: MessageLogInsert) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("message_log")
     .insert(log)
     .select()
