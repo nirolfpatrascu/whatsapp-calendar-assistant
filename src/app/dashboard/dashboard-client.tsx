@@ -33,6 +33,12 @@ const TIMEZONES = [
   "Pacific/Auckland",
 ];
 
+const inputClasses =
+  "w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-white placeholder:text-[#9BAF7A]/40 focus:ring-2 focus:ring-[#76B900]/50 focus:border-transparent focus:outline-none transition-all duration-150";
+
+const selectClasses =
+  "rounded-lg border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-white focus:ring-2 focus:ring-[#76B900]/50 focus:border-transparent focus:outline-none transition-all duration-150";
+
 export function DashboardClient({ user: initialUser }: { user: User }) {
   const supabase = createClient();
   const router = useRouter();
@@ -40,8 +46,12 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
   const [user, setUser] = useState(initialUser);
   const [phone, setPhone] = useState(initialUser.phone ?? "");
   const [timezone, setTimezone] = useState(initialUser.timezone);
-  const [preferredHour, setPreferredHour] = useState(initialUser.preferred_hour);
-  const [preferredMinute, setPreferredMinute] = useState(initialUser.preferred_minute);
+  const [preferredHour, setPreferredHour] = useState(
+    initialUser.preferred_hour
+  );
+  const [preferredMinute, setPreferredMinute] = useState(
+    initialUser.preferred_minute
+  );
 
   const [calendars, setCalendars] = useState<CalendarItem[]>([]);
   const [calendarsLoading, setCalendarsLoading] = useState(false);
@@ -121,9 +131,7 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
   async function handleSaveCalendars() {
     setCalendarsSaving(true);
     setCalendarMessage("");
-    const selectedIds = calendars
-      .filter((c) => c.selected)
-      .map((c) => c.id);
+    const selectedIds = calendars.filter((c) => c.selected).map((c) => c.id);
 
     if (selectedIds.length === 0) {
       setCalendarMessage("Select at least one calendar");
@@ -187,30 +195,47 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
     Array.isArray(user.selected_calendar_ids) &&
     user.selected_calendar_ids.length > 0;
 
+  const formattedTime = `${String(user.preferred_hour).padStart(2, "0")}:${String(user.preferred_minute).padStart(2, "0")}`;
+
   return (
-    <div className="min-h-screen bg-[#0A2E1F] p-8">
-      <div className="mx-auto max-w-2xl space-y-6">
+    <div className="relative min-h-screen p-6 md:p-10">
+      {/* Background glow */}
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top_center,_rgba(118,185,0,0.08)_0%,_transparent_50%)]" />
+
+      <div className="relative z-10 mx-auto max-w-2xl space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-[#F0FAF4]">
-            Welcome, {user.user_name ?? user.email}
-          </h1>
+        <div className="flex items-center justify-between pb-2">
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              Hey, {user.user_name?.split(" ")[0] ?? "there"}
+            </h1>
+            <p className="mt-0.5 text-sm text-[#9BAF7A]">
+              Your agenda is delivered daily at{" "}
+              <span className="font-medium text-[#76B900]">
+                {formattedTime}
+              </span>{" "}
+              ({user.timezone.split("/").pop()?.replace("_", " ")})
+            </p>
+          </div>
           <button
             onClick={handleSignOut}
-            className="rounded-lg border border-[#145C42] px-4 py-2 text-sm text-[#E6F5ED]/80 hover:bg-[#145C42] transition-colors duration-150"
+            className="rounded-full border border-white/[0.08] px-4 py-2 text-sm text-[#9BAF7A] hover:bg-white/[0.04] hover:text-white transition-all duration-150"
           >
             Sign Out
           </button>
         </div>
 
         {/* Phone & Timezone */}
-        <div className="rounded-xl border border-[#145C42] bg-[#0D3B2E] p-6 space-y-4 shadow-lg">
-          <h2 className="text-lg font-semibold text-[#F0FAF4]">
-            Phone & Timezone
-          </h2>
-          <div className="space-y-3">
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 space-y-5">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">&#9742;&#65039;</span>
+            <h2 className="text-base font-semibold text-white">
+              Delivery Settings
+            </h2>
+          </div>
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#E6F5ED]/80 mb-1">
+              <label className="block text-sm font-medium text-[#9BAF7A] mb-1.5">
                 WhatsApp Phone Number
               </label>
               <input
@@ -218,17 +243,17 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+1234567890"
-                className="w-full rounded-lg border border-[#1A7A56] bg-[#145C42] px-3 py-2 text-[#F0FAF4] placeholder:text-[#E6F5ED]/40 focus:ring-2 focus:ring-[#2DBF7E] focus:border-transparent focus:outline-none transition-colors duration-150"
+                className={inputClasses}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#E6F5ED]/80 mb-1">
-                Timezone
+              <label className="block text-sm font-medium text-[#9BAF7A] mb-1.5">
+                Your Timezone
               </label>
               <select
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-                className="w-full rounded-lg border border-[#1A7A56] bg-[#145C42] px-3 py-2 text-[#F0FAF4] focus:ring-2 focus:ring-[#2DBF7E] focus:border-transparent focus:outline-none transition-colors duration-150"
+                className={`${selectClasses} w-full`}
               >
                 {TIMEZONES.map((tz) => (
                   <option key={tz} value={tz}>
@@ -238,14 +263,14 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#E6F5ED]/80 mb-1">
-                Preferred delivery time
+              <label className="block text-sm font-medium text-[#9BAF7A] mb-1.5">
+                Deliver my agenda at
               </label>
-              <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-2">
                 <select
                   value={preferredHour}
                   onChange={(e) => setPreferredHour(Number(e.target.value))}
-                  className="rounded-lg border border-[#1A7A56] bg-[#145C42] px-3 py-2 text-[#F0FAF4] focus:ring-2 focus:ring-[#2DBF7E] focus:border-transparent focus:outline-none transition-colors duration-150"
+                  className={selectClasses}
                 >
                   {Array.from({ length: 24 }, (_, i) => (
                     <option key={i} value={i}>
@@ -253,11 +278,11 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
                     </option>
                   ))}
                 </select>
-                <span className="text-[#E6F5ED]/60 font-medium">:</span>
+                <span className="text-[#9BAF7A]/60 font-bold text-lg">:</span>
                 <select
                   value={preferredMinute}
                   onChange={(e) => setPreferredMinute(Number(e.target.value))}
-                  className="rounded-lg border border-[#1A7A56] bg-[#145C42] px-3 py-2 text-[#F0FAF4] focus:ring-2 focus:ring-[#2DBF7E] focus:border-transparent focus:outline-none transition-colors duration-150"
+                  className={selectClasses}
                 >
                   {[0, 15, 30, 45].map((m) => (
                     <option key={m} value={m}>
@@ -267,110 +292,143 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
                 </select>
               </div>
             </div>
-            <button
-              onClick={handleSaveProfile}
-              disabled={profileSaving}
-              className="rounded-lg bg-[#229966] px-4 py-2 text-sm text-white font-medium hover:bg-[#1A7A56] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-              {profileSaving ? "Saving..." : "Save"}
-            </button>
-            {profileMessage && (
-              <p
-                className={`text-sm ${
-                  profileMessage === "Profile saved!"
-                    ? "text-[#2DBF7E]"
-                    : "text-red-400"
-                }`}
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                onClick={handleSaveProfile}
+                disabled={profileSaving}
+                className="rounded-full bg-[#76B900] px-5 py-2 text-sm font-semibold text-[#080E08] hover:bg-[#8DD41A] disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[#76B900]/10 transition-all duration-200 active:scale-[0.97]"
               >
-                {profileMessage}
-              </p>
-            )}
+                {profileSaving ? "Saving..." : "Save Settings"}
+              </button>
+              {profileMessage && (
+                <p
+                  className={`text-sm ${
+                    profileMessage === "Profile saved!"
+                      ? "text-[#76B900]"
+                      : "text-red-400"
+                  }`}
+                >
+                  {profileMessage}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Calendars */}
-        <div className="rounded-xl border border-[#145C42] bg-[#0D3B2E] p-6 space-y-4 shadow-lg">
-          <h2 className="text-lg font-semibold text-[#F0FAF4]">Calendars</h2>
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 space-y-5">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">&#128197;</span>
+            <h2 className="text-base font-semibold text-white">
+              Your Calendars
+            </h2>
+          </div>
           {calendarsLoading ? (
-            <p className="text-sm text-[#E6F5ED]/60">Loading calendars...</p>
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#76B900] border-t-transparent" />
+              <p className="text-sm text-[#9BAF7A]">Loading calendars...</p>
+            </div>
           ) : calendars.length === 0 ? (
-            <p className="text-sm text-[#E6F5ED]/60">
+            <p className="text-sm text-[#9BAF7A]">
               No calendars found. Make sure Google is connected.
             </p>
           ) : (
-            <div className="space-y-2">
-              {calendars.map((cal) => (
-                <label
-                  key={cal.id}
-                  className="flex items-center gap-2 cursor-pointer"
+            <div className="space-y-3">
+              <div className="space-y-1">
+                {calendars.map((cal) => (
+                  <label
+                    key={cal.id}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 cursor-pointer hover:bg-white/[0.03] transition-colors duration-100"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={cal.selected}
+                      onChange={() => toggleCalendar(cal.id)}
+                      className="h-4 w-4 rounded border-white/20 accent-[#76B900]"
+                    />
+                    <span className="text-sm text-[#E8F0DC]">
+                      {cal.summary}
+                      {cal.primary && (
+                        <span className="ml-1.5 text-xs text-[#9BAF7A]/50">
+                          (primary)
+                        </span>
+                      )}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  onClick={handleSaveCalendars}
+                  disabled={calendarsSaving}
+                  className="rounded-full bg-[#76B900] px-5 py-2 text-sm font-semibold text-[#080E08] hover:bg-[#8DD41A] disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[#76B900]/10 transition-all duration-200 active:scale-[0.97]"
                 >
-                  <input
-                    type="checkbox"
-                    checked={cal.selected}
-                    onChange={() => toggleCalendar(cal.id)}
-                    className="rounded border-[#1A7A56] accent-[#229966]"
-                  />
-                  <span className="text-sm text-[#E6F5ED]">
-                    {cal.summary}
-                    {cal.primary && (
-                      <span className="ml-1 text-xs text-[#E6F5ED]/50">
-                        (primary)
-                      </span>
-                    )}
-                  </span>
-                </label>
-              ))}
-              <button
-                onClick={handleSaveCalendars}
-                disabled={calendarsSaving}
-                className="rounded-lg bg-[#229966] px-4 py-2 text-sm text-white font-medium hover:bg-[#1A7A56] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                {calendarsSaving ? "Saving..." : "Save Selection"}
-              </button>
-              {calendarMessage && (
-                <p
-                  className={`text-sm ${
-                    calendarMessage === "Calendars saved!"
-                      ? "text-[#2DBF7E]"
-                      : "text-red-400"
-                  }`}
-                >
-                  {calendarMessage}
-                </p>
-              )}
+                  {calendarsSaving ? "Saving..." : "Save Selection"}
+                </button>
+                {calendarMessage && (
+                  <p
+                    className={`text-sm ${
+                      calendarMessage === "Calendars saved!"
+                        ? "text-[#76B900]"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {calendarMessage}
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>
 
         {/* Send Agenda */}
-        <div className="rounded-xl border border-[#145C42] bg-[#0D3B2E] p-6 space-y-4 shadow-lg">
-          <h2 className="text-lg font-semibold text-[#F0FAF4]">
-            Send Agenda
-          </h2>
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">&#128640;</span>
+            <h2 className="text-base font-semibold text-white">
+              Send Now
+            </h2>
+          </div>
+          <p className="text-sm text-[#9BAF7A]">
+            Can&apos;t wait for tomorrow? Send a preview of your agenda right
+            now.
+          </p>
           <button
             onClick={handleSendAgenda}
             disabled={!canSend || sending}
-            className="rounded-lg bg-[#2DBF7E] px-6 py-3 text-[#0A2E1F] font-semibold hover:bg-[#229966] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            className="rounded-full border border-[#76B900]/30 bg-[#76B900]/10 px-6 py-3 font-semibold text-[#76B900] hover:bg-[#76B900]/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.97]"
           >
-            {sending ? "Sending..." : "Send Tomorrow's Agenda"}
+            {sending ? (
+              <span className="flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#76B900] border-t-transparent" />
+                Sending...
+              </span>
+            ) : (
+              "Send Tomorrow's Agenda"
+            )}
           </button>
           {!canSend && (
-            <p className="text-sm text-[#E6F5ED]/60">
-              Set your phone number and select calendars first.
+            <p className="text-sm text-[#9BAF7A]/60">
+              Set your phone number and select calendars above to get started.
             </p>
           )}
           {sendResult && (
             <div
-              className={`rounded-lg p-4 text-sm ${
+              className={`rounded-xl p-4 text-sm ${
                 sendResult.success
-                  ? "bg-[#229966]/20 text-[#2DBF7E]"
-                  : "bg-red-900/20 text-red-400"
+                  ? "border border-[#76B900]/20 bg-[#76B900]/10 text-[#76B900]"
+                  : "border border-red-500/20 bg-red-500/10 text-red-400"
               }`}
             >
               {sendResult.text}
             </div>
           )}
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-[#9BAF7A]/30 pb-4">
+          Calendar Assistant — Simple. Private. Effortless.
+        </p>
       </div>
     </div>
   );

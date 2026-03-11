@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Calendar Assistant",
-  description: "Get your tomorrow's agenda on WhatsApp",
+  title: "Calendar Assistant — Your day, summarized",
+  description:
+    "Get a personalized daily agenda delivered straight to your WhatsApp every morning.",
 };
 
 export default function RootLayout({
@@ -25,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0A2E1F]`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#080E08]`}
       >
         {children}
       </body>
