@@ -53,11 +53,20 @@ interface InternalEvent {
   durationText: string;
 }
 
-function formatTimeText(dateTimeValue: string | undefined): string {
+function formatTimeText(
+  dateTimeValue: string | undefined,
+  timezone: string
+): string {
   if (!dateTimeValue) return "";
   const d = new Date(dateTimeValue);
-  const hours = String(d.getHours()).padStart(2, "0");
-  const mins = String(d.getMinutes()).padStart(2, "0");
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: timezone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(d);
+  const hours = parts.find((p) => p.type === "hour")?.value ?? "00";
+  const mins = parts.find((p) => p.type === "minute")?.value ?? "00";
   return `${hours}:${mins}`;
 }
 
@@ -146,7 +155,7 @@ export function buildAgenda(
 
     if (ev.start?.dateTime) {
       startDate = new Date(ev.start.dateTime);
-      startTimeText = formatTimeText(ev.start.dateTime);
+      startTimeText = formatTimeText(ev.start.dateTime, timezone);
     } else if (ev.start?.date) {
       startDate = new Date(ev.start.date + "T00:00:00");
       startTimeText = "All day";
@@ -154,7 +163,7 @@ export function buildAgenda(
 
     if (ev.end?.dateTime) {
       endDate = new Date(ev.end.dateTime);
-      endTimeText = formatTimeText(ev.end.dateTime);
+      endTimeText = formatTimeText(ev.end.dateTime, timezone);
     } else if (ev.end?.date) {
       endDate = new Date(ev.end.date + "T23:59:59");
       endTimeText = "";
@@ -233,8 +242,8 @@ export function buildAgenda(
           a.endDate! <= b.endDate! ? a.endDate! : b.endDate!;
 
         overlappingSegments.push({
-          overlap_start: formatTimeText(overlapStart.toISOString()),
-          overlap_end: formatTimeText(overlapEnd.toISOString()),
+          overlap_start: formatTimeText(overlapStart.toISOString(), timezone),
+          overlap_end: formatTimeText(overlapEnd.toISOString(), timezone),
           events: [a.title, b.title],
         });
       }
@@ -265,8 +274,8 @@ export function buildAgenda(
     if (evStart > cursor) {
       if (hasAtLeastMinutes(cursor, evStart, 120)) {
         freeBlocks.push({
-          free_block_start: formatTimeText(cursor.toISOString()),
-          free_block_end: formatTimeText(evStart.toISOString()),
+          free_block_start: formatTimeText(cursor.toISOString(), timezone),
+          free_block_end: formatTimeText(evStart.toISOString(), timezone),
           free_block_duration: formatDurationText(cursor, evStart),
         });
       }
@@ -278,8 +287,8 @@ export function buildAgenda(
   if (cursor < workEnd) {
     if (hasAtLeastMinutes(cursor, workEnd, 120)) {
       freeBlocks.push({
-        free_block_start: formatTimeText(cursor.toISOString()),
-        free_block_end: formatTimeText(workEnd.toISOString()),
+        free_block_start: formatTimeText(cursor.toISOString(), timezone),
+        free_block_end: formatTimeText(workEnd.toISOString(), timezone),
         free_block_duration: formatDurationText(cursor, workEnd),
       });
     }
@@ -290,9 +299,6 @@ export function buildAgenda(
   if (eventsCount === 0) scenarioHint = "empty";
   else if (overlappingSegments.length > 0) scenarioHint = "overlap";
   else if (freeBlocks.length > 0) scenarioHint = "free_block";
-
-  // Fix n8n bug #7: explicitly include user_name
-  void timezone; // timezone used indirectly via dateText/dayName
 
   return {
     user_name: userName,
