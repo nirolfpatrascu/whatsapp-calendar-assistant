@@ -39,28 +39,30 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-500">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#0A2E1F] to-[#0D3B2E]">
+        <p className="text-[#E6F5ED]/60">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-white">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Calendar Assistant
-        </h1>
-        <p className="mt-2 text-gray-600">
-          Get your tomorrow&apos;s agenda on WhatsApp
-        </p>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-[#0A2E1F] to-[#0D3B2E] px-4">
+      <div className="w-full max-w-md rounded-2xl border border-[#145C42] bg-[#0D3B2E] p-10 shadow-2xl shadow-[#0A2E1F]/80 text-center space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-[#F0FAF4]">
+            Calendar Assistant
+          </h1>
+          <p className="mt-3 text-[#E6F5ED]/70">
+            Your daily calendar agenda, delivered via WhatsApp
+          </p>
+        </div>
+        <button
+          onClick={handleSignIn}
+          className="w-full rounded-xl bg-[#229966] px-6 py-3 text-white font-semibold hover:bg-[#1A7A56] shadow-lg shadow-[#229966]/20 transition-all duration-200"
+        >
+          Sign in with Google
+        </button>
       </div>
-      <button
-        onClick={handleSignIn}
-        className="rounded-lg bg-blue-600 px-6 py-3 text-white font-medium hover:bg-blue-700 transition-colors"
-      >
-        Sign in with Google
-      </button>
     </div>
   );
 }

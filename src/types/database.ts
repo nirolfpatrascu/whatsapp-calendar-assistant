@@ -7,6 +7,8 @@ export interface User {
   chat_id: string | null;
   google_refresh_token: string | null;
   timezone: string;
+  preferred_hour: number;
+  preferred_minute: number;
   selected_calendar_ids: string[] | null;
   last_sent_at: string | null;
   active: boolean;
@@ -31,6 +33,8 @@ export interface UserUpdate {
   chat_id?: string | null;
   google_refresh_token?: string | null;
   timezone?: string;
+  preferred_hour?: number;
+  preferred_minute?: number;
   selected_calendar_ids?: string[] | null;
   last_sent_at?: string | null;
   active?: boolean;

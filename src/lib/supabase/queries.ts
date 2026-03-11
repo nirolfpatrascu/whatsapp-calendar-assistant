@@ -39,6 +39,20 @@ export async function updateUser(authUserId: string, updates: UserUpdate) {
   return data;
 }
 
+export async function getActiveUsersWithSetup() {
+  const { data, error } = await getSupabase()
+    .from("users")
+    .select("*")
+    .eq("active", true)
+    .not("phone", "is", null)
+    .not("chat_id", "is", null)
+    .not("google_refresh_token", "is", null)
+    .not("selected_calendar_ids", "is", null);
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function createMessageLog(log: MessageLogInsert) {
   const { data, error } = await getSupabase()
     .from("message_log")

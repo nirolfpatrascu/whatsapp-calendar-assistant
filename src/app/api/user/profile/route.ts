@@ -48,6 +48,8 @@ export async function POST(request: Request) {
     phone: parsed.data.phone,
     chat_id: chatId,
     timezone: parsed.data.timezone,
+    preferred_hour: parsed.data.preferred_hour,
+    preferred_minute: parsed.data.preferred_minute,
   });
 
   return NextResponse.json({ user });
