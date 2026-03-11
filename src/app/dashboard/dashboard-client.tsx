@@ -37,7 +37,7 @@ const inputClasses =
   "w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-white placeholder:text-[#9BAF7A]/40 focus:ring-2 focus:ring-[#76B900]/50 focus:border-transparent focus:outline-none transition-all duration-150";
 
 const selectClasses =
-  "rounded-lg border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-white focus:ring-2 focus:ring-[#76B900]/50 focus:border-transparent focus:outline-none transition-all duration-150";
+  "rounded-lg border border-white/[0.08] bg-[#1a1f1a] px-3.5 py-2.5 text-white focus:ring-2 focus:ring-[#76B900]/50 focus:border-transparent focus:outline-none transition-all duration-150 [&>option]:bg-[#1a1f1a] [&>option]:text-white";
 
 export function DashboardClient({ user: initialUser }: { user: User }) {
   const supabase = createClient();

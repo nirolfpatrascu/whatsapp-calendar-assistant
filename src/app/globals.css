@@ -28,3 +28,9 @@ html {
   background: rgba(118, 185, 0, 0.3);
   color: #ffffff;
 }
+
+/* Ensure select dropdown options are readable on all browsers */
+select option {
+  background-color: #1a1f1a;
+  color: #ffffff;
+}
