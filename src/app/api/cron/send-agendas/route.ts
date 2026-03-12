@@ -48,6 +48,12 @@ export async function POST(request: Request) {
   try {
     const users = await getActiveUsersWithSetup();
 
+    const skipped: {
+      userId: string;
+      reason: string;
+      details?: Record<string, unknown>;
+    }[] = [];
+
     const results: {
       userId: string;
       success: boolean;
@@ -60,11 +66,17 @@ export async function POST(request: Request) {
         !Array.isArray(user.selected_calendar_ids) ||
         user.selected_calendar_ids.length === 0
       ) {
+        skipped.push({ userId: user.id, reason: "no_calendars_selected" });
         continue;
       }
 
       // Skip if already sent recently (idempotency)
       if (wasSentRecently(user.last_sent_at)) {
+        skipped.push({
+          userId: user.id,
+          reason: "sent_recently",
+          details: { last_sent_at: user.last_sent_at },
+        });
         continue;
       }
 
@@ -79,10 +91,19 @@ export async function POST(request: Request) {
             user.preferred_minute
           )
         ) {
+          skipped.push({
+            userId: user.id,
+            reason: "outside_time_window",
+            details: {
+              currentLocal: `${hour}:${String(minute).padStart(2, "0")}`,
+              preferred: `${user.preferred_hour}:${String(user.preferred_minute).padStart(2, "0")}`,
+              timezone: user.timezone,
+            },
+          });
           continue;
         }
       } catch {
-        console.error(`Invalid timezone for user ${user.id}: ${user.timezone}`);
+        skipped.push({ userId: user.id, reason: "invalid_timezone", details: { timezone: user.timezone } });
         continue;
       }
 
@@ -102,9 +123,11 @@ export async function POST(request: Request) {
       .map((r) => ({ userId: r.userId, error: r.error }));
 
     return NextResponse.json({
+      total_users: users.length,
       processed: results.length,
       succeeded,
       failed,
+      skipped,
       errors,
     });
   } catch (error) {
