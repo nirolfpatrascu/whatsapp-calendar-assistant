@@ -71,14 +71,15 @@ export async function POST(request: Request) {
       }
 
       // Skip if already sent recently (idempotency)
-      if (wasSentRecently(user.last_sent_at)) {
-        skipped.push({
-          userId: user.id,
-          reason: "sent_recently",
-          details: { last_sent_at: user.last_sent_at },
-        });
-        continue;
-      }
+      // TODO: Re-enable after testing
+      // if (wasSentRecently(user.last_sent_at)) {
+      //   skipped.push({
+      //     userId: user.id,
+      //     reason: "sent_recently",
+      //     details: { last_sent_at: user.last_sent_at },
+      //   });
+      //   continue;
+      // }
 
       // Check if current local time matches preferred time
       try {
