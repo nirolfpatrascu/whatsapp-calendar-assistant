@@ -1,16 +1,31 @@
+import type { AgendaMode } from "@/types/database";
+
 /**
- * Get tomorrow's start and end boundaries in UTC ISO format,
- * based on the user's timezone.
+ * Internal: get the target date based on agenda mode.
+ * "tomorrow" adds 24h, "today" uses current time.
+ */
+function getTargetDate(mode: AgendaMode): Date {
+  if (mode === "tomorrow") {
+    return new Date(Date.now() + 24 * 60 * 60 * 1000);
+  }
+  return new Date();
+}
+
+/**
+ * Get the start and end boundaries of a day in UTC ISO format,
+ * based on the user's timezone and agenda mode.
  *
  * Fixes n8n bug #5 (timezone default) and #6 (today vs tomorrow inconsistency).
  */
-export function getTomorrowBoundaries(timezone: string): {
+export function getDayBoundaries(
+  timezone: string,
+  mode: AgendaMode = "tomorrow"
+): {
   timeMin: string;
   timeMax: string;
 } {
-  const now = new Date();
+  const targetDate = getTargetDate(mode);
 
-  // Get tomorrow's date in the user's timezone
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
     year: "numeric",
@@ -18,25 +33,17 @@ export function getTomorrowBoundaries(timezone: string): {
     day: "2-digit",
   });
 
-  // Add 24 hours to get tomorrow
-  const tomorrowDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  const parts = formatter.formatToParts(tomorrowDate);
+  const parts = formatter.formatToParts(targetDate);
 
   const year = parts.find((p) => p.type === "year")!.value;
   const month = parts.find((p) => p.type === "month")!.value;
   const day = parts.find((p) => p.type === "day")!.value;
 
-  // Build start/end of day in the user's timezone, then convert to UTC
-  // Start: 00:00:00 in user's timezone
-  // End: 23:59:59 in user's timezone
   const dateStr = `${year}-${month}-${day}`;
 
-  // Create dates representing the boundaries in the target timezone
-  // We use a trick: create a date at midnight UTC, then offset by timezone difference
   const startLocal = new Date(`${dateStr}T00:00:00`);
   const endLocal = new Date(`${dateStr}T23:59:59`);
 
-  // Get the timezone offset by comparing formatted time to UTC
   function toUTCIso(localDate: Date, tz: string): string {
     const f = new Intl.DateTimeFormat("en-US", {
       timeZone: tz,
@@ -60,15 +67,12 @@ export function getTomorrowBoundaries(timezone: string): {
     return `${yr}-${mo}-${da}T${ho}:${mi}:${se}Z`;
   }
 
-  // We need the UTC equivalent of midnight and 23:59:59 in the user's timezone
-  // The trick: find the offset between the timezone and UTC
   const refDate = new Date(`${dateStr}T12:00:00Z`);
   const tzTime = new Date(
     toUTCIso(refDate, timezone).replace("Z", "+00:00")
   );
   const offsetMs = tzTime.getTime() - refDate.getTime();
 
-  // Midnight in user's TZ = midnight UTC minus offset
   const startUTC = new Date(startLocal.getTime() - offsetMs);
   const endUTC = new Date(endLocal.getTime() - offsetMs);
 
@@ -79,14 +83,18 @@ export function getTomorrowBoundaries(timezone: string): {
 }
 
 /**
- * Get tomorrow's date info in the user's timezone.
+ * Get date info (text, day name, day type) in the user's timezone
+ * for the target day based on agenda mode.
  */
-export function getTomorrowInfo(timezone: string): {
+export function getDayInfo(
+  timezone: string,
+  mode: AgendaMode = "tomorrow"
+): {
   dateText: string;
   dayName: string;
   dayType: "weekday" | "weekend";
 } {
-  const tomorrowDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const targetDate = getTargetDate(mode);
 
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
@@ -96,13 +104,13 @@ export function getTomorrowInfo(timezone: string): {
     weekday: "long",
   });
 
-  const parts = formatter.formatToParts(tomorrowDate);
+  const parts = formatter.formatToParts(targetDate);
   const year = parts.find((p) => p.type === "year")!.value;
   const month = parts.find((p) => p.type === "month")!.value;
   const day = parts.find((p) => p.type === "day")!.value;
   const weekday = parts.find((p) => p.type === "weekday")!.value;
 
-  const dayIndex = tomorrowDate.getDay();
+  const dayIndex = targetDate.getDay();
   const dayType = dayIndex === 0 || dayIndex === 6 ? "weekend" : "weekday";
 
   return {
@@ -110,4 +118,14 @@ export function getTomorrowInfo(timezone: string): {
     dayName: weekday,
     dayType,
   };
+}
+
+/** @deprecated Use getDayBoundaries(timezone, "tomorrow") instead */
+export function getTomorrowBoundaries(timezone: string) {
+  return getDayBoundaries(timezone, "tomorrow");
+}
+
+/** @deprecated Use getDayInfo(timezone, "tomorrow") instead */
+export function getTomorrowInfo(timezone: string) {
+  return getDayInfo(timezone, "tomorrow");
 }

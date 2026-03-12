@@ -1,3 +1,5 @@
+export type AgendaMode = "today" | "tomorrow";
+
 export interface User {
   id: string;
   auth_user_id: string;
@@ -9,6 +11,7 @@ export interface User {
   timezone: string;
   preferred_hour: number;
   preferred_minute: number;
+  agenda_mode: AgendaMode;
   selected_calendar_ids: string[] | null;
   last_sent_at: string | null;
   active: boolean;
@@ -35,6 +38,7 @@ export interface UserUpdate {
   timezone?: string;
   preferred_hour?: number;
   preferred_minute?: number;
+  agenda_mode?: AgendaMode;
   selected_calendar_ids?: string[] | null;
   last_sent_at?: string | null;
   active?: boolean;

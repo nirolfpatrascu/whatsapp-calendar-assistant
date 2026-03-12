@@ -14,6 +14,7 @@ export const UpdateProfileSchema = z.object({
     .refine((v) => [0, 15, 30, 45].includes(v), {
       message: "Minute must be 0, 15, 30, or 45",
     }),
+  agenda_mode: z.enum(["today", "tomorrow"]).default("tomorrow"),
 });
 
 export const UpdateCalendarSelectionSchema = z.object({

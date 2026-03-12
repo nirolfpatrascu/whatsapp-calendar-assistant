@@ -1,7 +1,7 @@
 import { updateUser, createMessageLog } from "@/lib/supabase/queries";
 import { exchangeRefreshToken } from "@/lib/google/oauth";
 import { fetchEvents } from "@/lib/google/calendar";
-import { getTomorrowBoundaries, getTomorrowInfo } from "@/lib/utils/timezone";
+import { getDayBoundaries, getDayInfo } from "@/lib/utils/timezone";
 import { buildAgenda } from "@/lib/agenda/builder";
 import { generateAgendaMessage } from "@/lib/llm/generator";
 import { sendWhatsAppMessage } from "@/lib/whatsapp/green-api";
@@ -36,9 +36,10 @@ export async function sendAgendaForUser(user: User): Promise<SendResult> {
     // 1. Refresh Google token
     const accessToken = await exchangeRefreshToken(user.google_refresh_token);
 
-    // 2. Get tomorrow boundaries in user's timezone
-    const { timeMin, timeMax } = getTomorrowBoundaries(user.timezone);
-    const { dateText, dayName, dayType } = getTomorrowInfo(user.timezone);
+    // 2. Get day boundaries based on user's agenda mode
+    const mode = user.agenda_mode ?? "tomorrow";
+    const { timeMin, timeMax } = getDayBoundaries(user.timezone, mode);
+    const { dateText, dayName, dayType } = getDayInfo(user.timezone, mode);
 
     // 3. Fetch events from selected calendars
     const allEvents: GoogleEvent[] = [];
@@ -62,8 +63,8 @@ export async function sendAgendaForUser(user: User): Promise<SendResult> {
       dayType
     );
 
-    // 5. Generate LLM message
-    const message = await generateAgendaMessage(agendaContext);
+    // 5. Generate LLM message (pass mode so prompt adapts)
+    const message = await generateAgendaMessage(agendaContext, mode);
 
     // 6. Send via WhatsApp
     await sendWhatsAppMessage(user.chat_id, message);

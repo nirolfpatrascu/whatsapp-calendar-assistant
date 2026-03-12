@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { SYSTEM_PROMPT, buildUserPrompt } from "./prompts";
+import { getSystemPrompt, buildUserPrompt } from "./prompts";
 import type { AgendaContext } from "@/lib/agenda/builder";
+import type { AgendaMode } from "@/types/database";
 
 function getClient() {
   return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -10,14 +11,15 @@ function getClient() {
  * Generate a WhatsApp agenda message using Claude Haiku.
  */
 export async function generateAgendaMessage(
-  context: AgendaContext
+  context: AgendaContext,
+  mode: AgendaMode = "tomorrow"
 ): Promise<string> {
   const response = await getClient().messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 1024,
-    system: SYSTEM_PROMPT,
+    system: getSystemPrompt(mode),
     messages: [
-      { role: "user", content: buildUserPrompt(context) },
+      { role: "user", content: buildUserPrompt(context, mode) },
     ],
   });
 

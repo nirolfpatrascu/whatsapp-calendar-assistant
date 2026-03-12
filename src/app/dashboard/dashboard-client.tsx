@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import { useRouter } from "next/navigation";
-import type { User } from "@/types/database";
+import type { User, AgendaMode } from "@/types/database";
 
 interface CalendarItem {
   id: string;
@@ -54,6 +54,9 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
   );
   const [preferredMinute, setPreferredMinute] = useState(
     initialUser.preferred_minute
+  );
+  const [agendaMode, setAgendaMode] = useState<AgendaMode>(
+    initialUser.agenda_mode ?? "tomorrow"
   );
 
   const [calendars, setCalendars] = useState<CalendarItem[]>([]);
@@ -110,6 +113,7 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
           timezone,
           preferred_hour: preferredHour,
           preferred_minute: preferredMinute,
+          agenda_mode: agendaMode,
         }),
       });
       const data = await res.json();
@@ -213,7 +217,11 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
               Hey, {user.user_name?.split(" ")[0] ?? "there"}
             </h1>
             <p className="mt-0.5 text-sm text-[#9BAF7A]">
-              Your agenda is delivered daily at{" "}
+              Your{" "}
+              {user.agenda_mode === "today"
+                ? "daily morning agenda"
+                : "next-day agenda preview"}{" "}
+              is delivered at{" "}
               <span className="font-medium text-[#76B900]">
                 {formattedTime}
               </span>{" "}
@@ -293,6 +301,41 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#9BAF7A] mb-1.5">
+                Agenda for
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAgendaMode("today")}
+                  className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-150 ${
+                    agendaMode === "today"
+                      ? "bg-[#76B900]/20 border border-[#76B900]/50 text-[#76B900]"
+                      : "bg-white/[0.04] border border-white/[0.08] text-[#9BAF7A] hover:bg-white/[0.06]"
+                  }`}
+                >
+                  Today
+                  <span className="block text-xs mt-0.5 opacity-70">
+                    Morning briefing
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAgendaMode("tomorrow")}
+                  className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-150 ${
+                    agendaMode === "tomorrow"
+                      ? "bg-[#76B900]/20 border border-[#76B900]/50 text-[#76B900]"
+                      : "bg-white/[0.04] border border-white/[0.08] text-[#9BAF7A] hover:bg-white/[0.06]"
+                  }`}
+                >
+                  Tomorrow
+                  <span className="block text-xs mt-0.5 opacity-70">
+                    Evening preview
+                  </span>
+                </button>
               </div>
             </div>
             <div className="flex items-center gap-3 pt-1">
@@ -393,8 +436,9 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
             </h2>
           </div>
           <p className="text-sm text-[#9BAF7A]">
-            Can&apos;t wait for tomorrow? Send a preview of your agenda right
-            now.
+            Send a preview of your{" "}
+            {user.agenda_mode === "today" ? "today's" : "tomorrow's"} agenda
+            right now.
           </p>
           <button
             onClick={handleSendAgenda}
@@ -407,7 +451,9 @@ export function DashboardClient({ user: initialUser }: { user: User }) {
                 Sending...
               </span>
             ) : (
-              "Send Tomorrow's Agenda"
+              user.agenda_mode === "today"
+                ? "Send Today's Agenda"
+                : "Send Tomorrow's Agenda"
             )}
           </button>
           {!canSend && (

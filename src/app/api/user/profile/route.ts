@@ -50,6 +50,7 @@ export async function POST(request: Request) {
     timezone: parsed.data.timezone,
     preferred_hour: parsed.data.preferred_hour,
     preferred_minute: parsed.data.preferred_minute,
+    agenda_mode: parsed.data.agenda_mode,
   });
 
   return NextResponse.json({ user });
