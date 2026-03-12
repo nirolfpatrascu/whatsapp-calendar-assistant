@@ -36,7 +36,7 @@ function wasSentRecently(lastSentAt: string | null): boolean {
   return lastSent > twelveHoursAgo;
 }
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   // Verify authorization
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
