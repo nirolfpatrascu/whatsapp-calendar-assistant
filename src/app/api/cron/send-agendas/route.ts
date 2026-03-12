@@ -26,7 +26,7 @@ function isWithinWindow(
   const currentTotal = currentHour * 60 + currentMinute;
   const preferredTotal = preferredHour * 60 + preferredMinute;
   const diff = Math.abs(currentTotal - preferredTotal);
-  return diff <= 7;
+  return diff <= 14;
 }
 
 function wasSentRecently(lastSentAt: string | null): boolean {
